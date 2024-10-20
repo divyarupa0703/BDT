@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Prediction Results</h1>
+        
+        <div class="image-container">
+            <img src="{{ url_for('uploaded_file', filename=filename) }}" alt="Uploaded Image" width="300">
+        </div>
+
+        <h2>Predicted Class: {{ predicted_class_name }}</h2>
+
+        <div class="analysis-section">
+            <h3>Material Analysis</h3>
+            <h4>Biodegradability</h4>
+            <ul>
+                {% for material in material_data.biodegradability %}
+                <li>{{ material.material }} - {{ material.biodegradability_rate }}% ({{ material.category }})</li>
+                {% endfor %}
+            </ul>
+
+            <h4>Recyclability</h4>
+            <ul>
+                {% for material in material_data.recyclability %}
+                <li>{{ material.material }} - {{ material.recyclability_rate }}% ({{ material.category }})</li>
+                {% endfor %}
+            </ul>
+
+            <h4>Decomposition Time</h4>
+            <ul>
+                {% for material in material_data.decomposition %}
+                <li>{{ material.material }} - {{ material.decomposition_time }} days ({{ material.category }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <a href="{{ url_for('home') }}">Upload another image</a>
+    </div>
+</body>
+</html>
