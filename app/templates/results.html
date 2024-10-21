@@ -3,35 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prediction Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Material Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> <!-- Link to your custom stylesheet -->
+    <script src="https://d3js.org/d3.v6.min.js"></script>
 </head>
 <body>
+
     <div class="container">
         <h1>Prediction Results</h1>
-        
-        <div class="image-container">
-            <img src="{{ url_for('uploaded_file', filename=filename) }}" alt="Uploaded Image" width="300">
-        </div>
 
+
+        <!-- Predicted class -->
         <h2>Predicted Class: {{ predicted_class_name }}</h2>
 
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <h3>Material Summary</h3>
+            <p class="summary-item"><strong>Recyclability:</strong> {{ material_data.recyclability[0].recyclability_rate }}%</p>
+            <p class="summary-item"><strong>Biodegradability:</strong> {{ material_data.biodegradability[0].biodegradability_rate }}%</p>
+        </div>
+
+        <!-- Analysis Section -->
         <div class="analysis-section">
-            <h3>Material Analysis</h3>
+            <h3>Detailed Material Analysis</h3>
+
+            <!-- Biodegradability Analysis -->
             <h4>Biodegradability</h4>
             <ul>
                 {% for material in material_data.biodegradability %}
-                <li>{{ material.material }} - {{ material.biodegradability_rate }}% ({{ material.category }})</li>
+                <li>{{ material.category }}</li>
                 {% endfor %}
             </ul>
 
+            <!-- Recyclability Analysis -->
             <h4>Recyclability</h4>
             <ul>
                 {% for material in material_data.recyclability %}
-                <li>{{ material.material }} - {{ material.recyclability_rate }}% ({{ material.category }})</li>
+                <li>{{ material.category }}</li>
                 {% endfor %}
             </ul>
 
+            <!-- Decomposition Time Analysis -->
             <h4>Decomposition Time</h4>
             <ul>
                 {% for material in material_data.decomposition %}
@@ -40,7 +52,88 @@
             </ul>
         </div>
 
-        <a href="{{ url_for('home') }}">Upload another image</a>
+        <!-- Separate Pie Charts Section -->
+        <div class="chart-section">
+            <h3>Material Breakdown (Visualized)</h3>
+
+            <!-- Recyclability Chart -->
+            <div id="recyclability-chart" class="chart-container"></div>
+
+            <!-- Biodegradability Chart -->
+            <div id="biodegradability-chart" class="chart-container"></div>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="upload-link">Upload another image</a>
     </div>
+
+    <script>
+        // Data for recyclability and biodegradability
+        const recyclabilityRate = {{ material_data.recyclability[0].recyclability_rate }};
+        const biodegradabilityRate = {{ material_data.biodegradability[0].biodegradability_rate }};
+
+        // Function to create a pie chart
+        function createPieChart(elementId, title, rate) {
+            // Set dimensions for the chart
+            const width = 400;
+            const height = 400;
+            const margin = 40;
+
+            // Define radius for the pie chart
+            const radius = Math.min(width, height) / 2 - margin;
+
+            // Append an SVG element to the provided div
+            const svg = d3.select(elementId)
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+            // Define the data for the chart
+            const data = [
+                { label: title + ' Rate', value: rate },
+                { label: 'Remaining', value: 100 - rate }
+            ];
+
+            // Create a color scale
+            const color = d3.scaleOrdinal()
+                .domain(data.map(d => d.label))
+                .range(d3.schemeCategory10);
+
+            // Compute the position of each slice of the pie
+            const pie = d3.pie()
+                .value(d => d.value);
+
+            const data_ready = pie(data);
+
+            // Build the pie chart
+            svg.selectAll('pieces')
+                .data(data_ready)
+                .enter()
+                .append('path')
+                .attr('d', d3.arc()
+                    .innerRadius(0)
+                    .outerRadius(radius)
+                )
+                .attr('fill', d => color(d.data.label))
+                .attr("stroke", "black")
+                .style("stroke-width", "2px")
+                .style("opacity", 0.7);
+
+            // Add labels to each slice
+            svg.selectAll('labels')
+                .data(data_ready)
+                .enter()
+                .append('text')
+                .text(d => `${d.data.label}: ${d.data.value}%`)
+                .attr("transform", d => `translate(${d3.arc().innerRadius(0).outerRadius(radius).centroid(d)})`)
+                .style("text-anchor", "middle")
+                .style("font-size", 15);
+        }
+
+        // Create pie charts for recyclability and biodegradability
+        createPieChart("#recyclability-chart", "Recyclability", recyclabilityRate);
+        createPieChart("#biodegradability-chart", "Biodegradability", biodegradabilityRate);
+    </script>
 </body>
 </html>

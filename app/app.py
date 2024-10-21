@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for, jsonify
+from flask import Flask, request, render_template, redirect, url_for, jsonify, send_from_directory
 import torch
 from torch import nn
 from torchvision import models, transforms
@@ -11,7 +11,7 @@ from cassandra.cluster import Cluster
 app = Flask(__name__)
 
 # Path to save uploaded images
-UPLOAD_FOLDER = 'static/uploads/'
+UPLOAD_FOLDER = 'uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit file size to 16MB
 
@@ -215,7 +215,7 @@ def upload_image():
 # Route to display uploaded image
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return redirect(url_for('static', filename='uploads/' + filename), code=301) 
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # Function to check allowed file types
 def allowed_file(filename):

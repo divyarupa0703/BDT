@@ -1,0 +1,55 @@
+visualization.html:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='d3.v7.min.js') }}"></script> <!-- Include D3.js -->
+</head>
+<body>
+    <div class="container">
+        <h1>Waste Material Data Visualization</h1>
+        <svg width="800" height="600"></svg> <!-- SVG for D3.js visualization -->
+        <script>
+            // Fetch data from the Flask backend
+            d3.json('/get_material_data').then(function(data) {
+                // Create a simple bar chart
+                const svg = d3.select("svg");
+                const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+                const width = +svg.attr("width") - margin.left - margin.right;
+                const height = +svg.attr("height") - margin.top - margin.bottom;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.material)) // Assuming 'material' is a column in your CSV
+                    .range([margin.left, width - margin.right])
+                    .padding(0.1);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.value)]) // Assuming 'value' is a column in your CSV
+                    .nice()
+                    .range([height - margin.bottom, margin.top]);
+
+                svg.append("g")
+                    .attr("transform", translate(0,${height - margin.bottom}))
+                    .call(d3.axisBottom(x));
+
+                svg.append("g")
+                    .attr("transform", translate(${margin.left},0))
+                    .call(d3.axisLeft(y));
+
+                svg.append("g")
+                    .selectAll("rect")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.material))
+                    .attr("y", d => y(d.value))
+                    .attr("height", d => y(0) - y(d.value))
+                    .attr("width", x.bandwidth());
+            });
+        </script>
+    </div>
+</body>
+</html>
+</html>

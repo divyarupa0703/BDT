@@ -1,5 +1,29 @@
-<form method="POST" action="/material_analysis">
-    <label for="material_name">Enter Material Name:</label>
-    <input type="text" name="material_name" required>
-    <button type="submit">Analyze</button>
-</form>
+material_analysis.html:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Material Analysis</h1>
+        <form method="POST" action="/material_analysis">
+            <label for="material_name">Enter Material Name:</label>
+            <input type="text" name="material_name" required>
+            <button type="submit">Analyze</button>
+        </form>
+
+        {% if results %}
+        <h2>Analysis Results</h2>
+        <ul>
+            {% for result in results %}
+            <li>{{ result }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</body>
+</html>
